@@ -8,9 +8,11 @@ router.post('/', async (req, res) => {
     const workout = await new Workout(req.body).save();
     res.status(201).json(workout);
   } catch (err) {
-    const code = err.name === 'ValidationError' ? 400 : 500;
-    const msg = err.name === 'ValidationError' ? `Validation failed: ${err.message}` : "Something went wrong";
-    res.status(code).json({ error: msg });
+    if (err.name === 'ValidationError') {
+      res.status(400).json({ error: `Validation failed: ${err.message}` });
+    } else {
+      res.status(500).json({ error: "Something went wrong" });
+    }
   }
 });
 
@@ -28,9 +30,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const workout = await Workout.findById(req.params.id);
-    workout
-      ? res.json(workout)
-      : res.status(404).json({ error: "Workout not found" });
+    if (workout) {
+      res.json(workout);
+    } else {
+      res.status(404).json({ error: "Workout not found" });
+    }
   } catch {
     res.status(404).json({ error: "Workout not found" });
   }
@@ -44,13 +48,17 @@ router.put('/:id', async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
-    updated
-      ? res.json(updated)
-      : res.status(404).json({ error: "Workout not found" });
+    if (updated) {
+      res.json(updated);
+    } else {
+      res.status(404).json({ error: "Workout not found" });
+    }
   } catch (err) {
-    const code = err.name === 'ValidationError' ? 400 : 500;
-    const msg = err.name === 'ValidationError' ? `Validation failed: ${err.message}` : "Something went wrong";
-    res.status(code).json({ error: msg });
+    if (err.name === 'ValidationError') {
+      res.status(400).json({ error: `Validation failed: ${err.message}` });
+    } else {
+      res.status(500).json({ error: "Something went wrong" });
+    }
   }
 });
 
@@ -58,9 +66,11 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Workout.findByIdAndDelete(req.params.id);
-    deleted
-      ? res.json({ message: "Workout deleted" })
-      : res.status(404).json({ error: "Workout not found" });
+    if (deleted) {
+      res.json({ message: "Workout deleted" });
+    } else {
+      res.status(404).json({ error: "Workout not found" });
+    }
   } catch {
     res.status(500).json({ error: "Something went wrong" });
   }
